@@ -1,34 +1,56 @@
 # 🌙 Crow Agent
 
-Automatically add dark/light mode functionality to Tailwind CSS projects through natural language commands.
+**Add dark/light mode support to any Tailwind project using natural language - all from your terminal.**
+
+Transform your project with simple commands like `crow "add dark mode"` without leaving your development environment.
 
 [![npm version](https://badge.fury.io/js/crow-agent.svg)](https://badge.fury.io/js/crow-agent)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## ✨ Features
 
-- **Natural Language Interface**: Simply run `crow "add dark mode"`
-- **Framework Support**: React, Vue, Next.js, Nuxt.js, and vanilla HTML
-- **Intelligent Analysis**: Scans your project and transforms existing Tailwind classes
-- **Component Generation**: Creates theme toggle components for your framework
-- **Git Integration**: Automatically commits changes with clear messages
-- **TypeScript Support**: Full TypeScript support with proper type definitions
-- **Accessibility**: Generated components follow WCAG AA guidelines
+- **🗣️ Natural Language Interface**: Use plain English commands like `crow "add dark mode"` or `crow "enable theme switching"`
+- **🖥️ Never Leave Terminal**: Complete theme integration without opening browsers, editors, or external tools
+- **🎯 One Command Setup**: Automatically transforms classes, updates config, and generates components
+- **🏗️ Framework Support**: React, Vue, Next.js, Nuxt.js, and vanilla HTML - works with any Tailwind project
+- **⚡ Tailwind v3 & v4 Compatible**: Supports both traditional config files and new CSS-based configuration
+- **🧠 Intelligent Analysis**: Scans your project and transforms existing Tailwind classes automatically
+- **🔧 Component Generation**: Creates theme toggle components that integrate seamlessly with your framework
+- **📝 Git Integration**: Automatically commits changes with descriptive messages
+- **🎨 Interactive Mode**: Run `crow` alone for a guided, menu-driven experience
+- **♿ Accessibility**: Generated components follow WCAG AA guidelines
 
 ## 🚀 Quick Start
+
+Transform any Tailwind project with natural language commands:
 
 ```bash
 # Install globally
 npm install -g crow-agent
 
-# Navigate to your Tailwind project
+# Navigate to your Tailwind project (any framework!)
 cd my-tailwind-project
 
-# Add dark mode support
+# Use natural language to add theme switching
 crow "add dark mode"
+# or
+crow "enable theme switching" 
+# or
+crow "add light dark mode support"
 ```
 
-That's it! Your project now has dark mode support.
+**That's it!** Your project now has complete theme switching support - all without leaving your terminal.
+
+> **🎯 The Terminal-First Approach**  
+> No context switching. No GUI tools. No manual configuration.  
+> Just natural language commands that understand what you want to do.
+
+### ✨ Interactive Mode
+For a guided experience, just run:
+```bash
+crow
+```
+Get a beautiful dashboard that analyzes your project and walks you through the setup process.
 
 ## 📦 Installation
 
@@ -51,24 +73,31 @@ pnpm add -D crow-agent
 
 ## 🎯 Usage
 
-### Natural Language Commands
+### 🗣️ Natural Language Commands (No GUI Required!)
+
+Work entirely from your terminal using intuitive commands:
 
 ```bash
-# Basic usage
+# Basic theme switching setup
 crow "add dark mode"
-crow "add dark theme"
-crow "enable dark mode"
+crow "add theme switching"
+crow "enable light dark mode"
+crow "add night mode support"
 
-# With options
+# Interactive guided setup
+crow
+
+# Preview changes before applying
 crow "add dark mode --dry-run"
-crow "add dark mode --backup"
-crow "add dark mode --force"
+crow "add theme switching --backup"
 
-# Analysis commands
+# Analysis and status commands
 crow "scan project"
-crow "status"
+crow "check status" 
 crow "help"
 ```
+
+**The beauty**: Never open a browser, never leave your terminal, never manually edit config files.
 
 ### Command Line Options
 
@@ -118,9 +147,9 @@ const component = await generateThemeToggleComponent({
 });
 ```
 
-## 🏗️ What It Does
+## 🏗️ What It Does (Without You Lifting a Finger!)
 
-Crow Agent performs the following transformations automatically:
+Run one command and Crow Agent automatically handles everything:
 
 ### 1. Class Transformation
 Converts existing Tailwind classes to include dark mode variants:
@@ -134,14 +163,20 @@ Converts existing Tailwind classes to include dark mode variants:
 ```
 
 ### 2. Configuration Update
-Updates your `tailwind.config.js` to enable dark mode:
 
+**Tailwind v3**: Updates your `tailwind.config.js` to enable dark mode:
 ```diff
 module.exports = {
 +  darkMode: 'class',
    content: ['./src/**/*.{js,jsx,ts,tsx}'],
    // ...
 }
+```
+
+**Tailwind v4**: Adds CSS custom variant to your stylesheets:
+```diff
+@import "tailwindcss";
++ @custom-variant dark (&:where(.dark, .dark *));
 ```
 
 ### 3. Component Generation
@@ -319,6 +354,19 @@ Check out example implementations in the [`examples/`](./examples) directory:
 - [Nuxt.js](./examples/nuxtjs)
 - [Vanilla HTML](./examples/vanilla-html)
 
+## 🖥️ Why Terminal-First?
+
+**Focus on coding, not clicking:**
+- ✅ Stay in your development flow
+- ✅ Natural language that just works  
+- ✅ One command replaces hours of manual work
+- ✅ No GUI tools or browser tabs required
+- ✅ Perfect for SSH/remote development
+- ✅ Scriptable and automatable
+
+**Traditional approach**: Open docs → Copy config → Edit files → Test → Debug → Repeat  
+**Crow approach**: `crow "add dark mode"` → Done ✨
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
@@ -361,4 +409,4 @@ MIT License - see the [LICENSE](./LICENSE) file for details.
 
 **Made with 🌙 by [Alex McKee](https://github.com/alexmckee)**
 
-Transform your Tailwind projects to embrace the dark side! 🚀
+Transform your Tailwind projects with natural language commands - no GUI required! 🚀

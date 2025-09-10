@@ -11,6 +11,7 @@ export interface ProjectDashboard {
   framework?: string;
   hasTailwind: boolean;
   hasThemeSwitching: boolean;
+  tailwindVersion?: string;
   componentCount: number;
   transformableComponents: number;
   estimatedChanges: number;
@@ -56,13 +57,14 @@ export class InteractiveDashboard {
         framework: 'Next.js + TypeScript',
         hasTailwind: true,
         hasThemeSwitching: false,
+        tailwindVersion: 'v4', // Mock v4 for demo
         componentCount: 12,
         transformableComponents: 8,
         estimatedChanges: 45,
         recommendations: [
           'Ready for theme switching implementation',
           'All components are compatible',
-          'Tailwind configuration is up to date'
+          'Tailwind v4 detected - CSS-based configuration supported!'
         ]
       };
 
@@ -82,7 +84,10 @@ export class InteractiveDashboard {
     console.log(chalk.white.bold('Framework Detection:'));
     console.log(`  Framework: ${chalk.cyan(analysis.framework || 'Unknown')}`);
     console.log(`  Package.json: ${analysis.framework ? formatStatus('success', 'Found') : formatStatus('error', 'Missing')}`);
-    console.log(`  Tailwind Config: ${analysis.hasTailwind ? formatStatus('success', 'Found') : formatStatus('error', 'Missing')}`);
+    const tailwindStatus = analysis.hasTailwind ? 
+      `${formatStatus('success', 'Found')} ${analysis.tailwindVersion ? chalk.gray(`(${analysis.tailwindVersion})`) : ''}` : 
+      formatStatus('error', 'Missing');
+    console.log(`  Tailwind Config: ${tailwindStatus}`);
     console.log('');
 
     // Theme Switching Status

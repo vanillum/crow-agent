@@ -14,6 +14,8 @@ export interface ProjectAnalysis {
   hasPackageJson: boolean;
   hasTailwindConfig: boolean;
   tailwindConfigPath?: string;
+  tailwindVersion: 'v3' | 'v4' | 'unknown';
+  tailwindCssFile?: string;
   packageJsonPath?: string;
   componentFiles: ComponentFile[];
   darkModeEnabled: boolean;
@@ -62,11 +64,14 @@ export async function analyzeProject(projectPath: string): Promise<ProjectAnalys
   const packageJsonPath = await findPackageJson(absolutePath);
   const tailwindConfigPath = await findTailwindConfig(absolutePath);
   
+  // Detect Tailwind version and CSS file
+  const { version: tailwindVersion, cssFile: tailwindCssFile } = await detectTailwindVersion(absolutePath);
+  
   // Find component files
   const componentFiles = await findComponentFiles(absolutePath, framework);
   
   // Check if dark mode is already enabled
-  const darkModeEnabled = await checkDarkModeEnabled(tailwindConfigPath);
+  const darkModeEnabled = await checkDarkModeEnabled(tailwindConfigPath, tailwindCssFile, tailwindVersion);
   
   // Analyze transformable content
   const transformableComponents = componentFiles.filter(f => f.transformableClasses > 0).length;
@@ -77,6 +82,8 @@ export async function analyzeProject(projectPath: string): Promise<ProjectAnalys
     hasPackageJson: !!packageJsonPath,
     hasTailwindConfig: !!tailwindConfigPath,
     tailwindConfigPath,
+    tailwindVersion,
+    tailwindCssFile,
     packageJsonPath,
     componentFiles,
     darkModeEnabled,
@@ -232,25 +239,77 @@ async function findComponentFiles(projectPath: string, framework: Framework): Pr
 }
 
 /**
- * Check if dark mode is already enabled in tailwind config
+ * Detect Tailwind CSS version and CSS file
  */
-async function checkDarkModeEnabled(tailwindConfigPath?: string): Promise<boolean> {
-  if (!tailwindConfigPath) {
-    return false;
-  }
-
+async function detectTailwindVersion(projectPath: string): Promise<{ version: 'v3' | 'v4' | 'unknown'; cssFile?: string }> {
+  // Look for CSS files with @import "tailwindcss" (v4)
+  const cssPatterns = ['**/*.css', '**/globals.css', '**/app.css', '**/style.css', '**/styles.css'];
+  
   try {
-    // Read the config file as text first to avoid require() issues
-    const configContent = await fs.readFile(tailwindConfigPath, 'utf-8');
-    
-    // Simple check for darkMode configuration
-    return configContent.includes('darkMode') && 
-           (configContent.includes("'class'") || configContent.includes('"class"') ||
-            configContent.includes("'media'") || configContent.includes('"media"'));
+    for (const pattern of cssPatterns) {
+      const cssFiles = await glob(pattern, { 
+        cwd: projectPath, 
+        absolute: true, 
+        ignore: ['**/node_modules/**', '**/dist/**', '**/build/**'] 
+      });
+      
+      for (const cssFile of cssFiles) {
+        try {
+          const content = await fs.readFile(cssFile, 'utf-8');
+          if (content.includes('@import "tailwindcss"') || content.includes("@import 'tailwindcss'")) {
+            return { version: 'v4', cssFile };
+          }
+        } catch (error) {
+          // Skip unreadable files
+          continue;
+        }
+      }
+    }
   } catch (error) {
-    console.warn(`Warning: Could not read Tailwind config at ${tailwindConfigPath}:`, error);
-    return false;
+    // If we can't scan CSS files, fall back to config detection
   }
+  
+  // Check for traditional config file (v3)
+  const configPath = await findTailwindConfig(projectPath);
+  if (configPath) {
+    return { version: 'v3' };
+  }
+  
+  return { version: 'unknown' };
+}
+
+/**
+ * Check if dark mode is already enabled in tailwind config or CSS
+ */
+async function checkDarkModeEnabled(tailwindConfigPath?: string, cssFile?: string, version?: string): Promise<boolean> {
+  // Check v4 CSS file for custom dark variant
+  if (version === 'v4' && cssFile) {
+    try {
+      const content = await fs.readFile(cssFile, 'utf-8');
+      return content.includes('@custom-variant dark');
+    } catch (error) {
+      console.warn(`Warning: Could not read CSS file at ${cssFile}:`, error);
+      return false;
+    }
+  }
+  
+  // Check v3 config file
+  if (tailwindConfigPath) {
+    try {
+      // Read the config file as text first to avoid require() issues
+      const configContent = await fs.readFile(tailwindConfigPath, 'utf-8');
+      
+      // Simple check for darkMode configuration
+      return configContent.includes('darkMode') && 
+             (configContent.includes("'class'") || configContent.includes('"class"') ||
+              configContent.includes("'media'") || configContent.includes('"media"'));
+    } catch (error) {
+      console.warn(`Warning: Could not read Tailwind config at ${tailwindConfigPath}:`, error);
+      return false;
+    }
+  }
+  
+  return false;
 }
 
 /**

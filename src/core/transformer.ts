@@ -327,9 +327,22 @@ export async function restoreFromBackup(backupDir: string): Promise<void> {
 }
 
 /**
- * Update tailwind.config.js to enable dark mode
+ * Update Tailwind configuration for both v3 and v4
  */
-export async function updateTailwindConfig(configPath: string): Promise<boolean> {
+export async function updateTailwindConfig(configPath?: string, cssFile?: string, version?: string): Promise<boolean> {
+  if (version === 'v4' && cssFile) {
+    return await updateTailwindV4Config(cssFile);
+  } else if (version === 'v3' && configPath) {
+    return await updateTailwindV3Config(configPath);
+  }
+  
+  throw new Error('Unable to update Tailwind configuration: missing config file or CSS file');
+}
+
+/**
+ * Update tailwind.config.js to enable dark mode (v3)
+ */
+async function updateTailwindV3Config(configPath: string): Promise<boolean> {
   try {
     const configContent = await fs.readFile(configPath, 'utf-8');
     
@@ -351,6 +364,48 @@ export async function updateTailwindConfig(configPath: string): Promise<boolean>
 
     return false;
   } catch (error) {
-    throw new Error(`Failed to update Tailwind config: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`Failed to update Tailwind v3 config: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Update CSS file to enable dark mode custom variant (v4)
+ */
+async function updateTailwindV4Config(cssFile: string): Promise<boolean> {
+  try {
+    const cssContent = await fs.readFile(cssFile, 'utf-8');
+    
+    // Check if dark mode custom variant is already configured
+    if (cssContent.includes('@custom-variant dark')) {
+      return false; // Already configured
+    }
+
+    // Add the custom dark variant after the @import statement
+    const darkVariant = '@custom-variant dark (&:where(.dark, .dark *));';
+    
+    let updatedContent: string;
+    if (cssContent.includes('@import "tailwindcss"')) {
+      updatedContent = cssContent.replace(
+        '@import "tailwindcss";',
+        `@import "tailwindcss";\n\n${darkVariant}`
+      );
+    } else if (cssContent.includes("@import 'tailwindcss'")) {
+      updatedContent = cssContent.replace(
+        "@import 'tailwindcss';",
+        `@import 'tailwindcss';\n\n${darkVariant}`
+      );
+    } else {
+      // Add at the beginning if no import found
+      updatedContent = `${darkVariant}\n\n${cssContent}`;
+    }
+
+    if (updatedContent !== cssContent) {
+      await fs.writeFile(cssFile, updatedContent, 'utf-8');
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    throw new Error(`Failed to update Tailwind v4 CSS: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
