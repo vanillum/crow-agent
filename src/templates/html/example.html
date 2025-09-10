@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme Toggle Example</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+</head>
+<body class="h-full bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
+  <div class="min-h-full">
+    <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              My App
+            </h1>
+          </div>
+          
+          <!-- Theme Toggle Button -->
+          <div class="flex items-center space-x-4">
+            <div data-theme-toggle data-variant="button" data-size="md"></div>
+            <div data-theme-toggle data-variant="switch"></div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div class="px-4 py-6 sm:px-0">
+        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+              Theme Toggle Demo
+            </h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+              This page demonstrates automatic dark mode functionality added by crow-agent.
+              The theme toggles in the navigation bar allow you to switch between light and dark modes.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <h3 class="text-md font-medium text-gray-900 dark:text-gray-100 mb-2">
+                  Card Example
+                </h3>
+                <p class="text-gray-600 dark:text-gray-300 text-sm">
+                  This card demonstrates how background and text colors automatically adapt to the current theme.
+                </p>
+              </div>
+              
+              <div class="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 p-4 rounded-lg">
+                <h3 class="text-md font-medium text-blue-900 dark:text-blue-100 mb-2">
+                  Colored Card
+                </h3>
+                <p class="text-blue-700 dark:text-blue-200 text-sm">
+                  Even colored components work well with dark mode when properly configured.
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <button class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors">
+                Primary Button
+              </button>
+              <button class="ml-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-md transition-colors">
+                Secondary Button
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="theme-toggle.js"></script>
+</body>
+</html>
