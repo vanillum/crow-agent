@@ -363,5 +363,3 @@ MIT License - see the [LICENSE](./LICENSE) file for details.
 ---
 
 **Made with 🌙 by [Alex McKee](https://github.com/alexmckee)**
-
-Transform your Tailwind projects to embrace the dark side! 🚀
