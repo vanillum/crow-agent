@@ -1,5 +1,8 @@
 # 🌙 Crow Agent
 
+<img width="478" height="207" alt="Screenshot 2025-09-10 at 1 52 26 PM" src="https://github.com/user-attachments/assets/345878e7-7f32-4ff0-9358-7f22031c3d3d" />
+
+
 Automatically add dark/light mode functionality to Tailwind CSS projects through natural language commands.
 
 [![npm version](https://badge.fury.io/js/crow-agent.svg)](https://badge.fury.io/js/crow-agent)
