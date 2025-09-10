@@ -10,6 +10,7 @@ import { parseCommand, validateCommand, getHelpText } from './parser.js';
 import { addDarkModeCommand } from './commands/add-dark-mode.js';
 import { scanCommand } from './commands/scan.js';
 import { statusCommand } from './commands/status.js';
+import { InteractiveMenu } from './interactive/menu.js';
 
 const program = new Command();
 
@@ -31,13 +32,15 @@ program
   .option('--no-commit', 'Skip automatic git commit')
   .option('--verbose', 'Enable verbose output')
   .option('--json', 'Output results in JSON format')
+  .option('--interactive', 'Start interactive mode')
   .action(async (commandArgs: string[], options: any) => {
     try {
       const commandString = commandArgs.join(' ').trim();
       
-      if (!commandString) {
-        // No command provided, show help
-        console.log(getHelpText());
+      if (!commandString || options.interactive) {
+        // No command provided or interactive flag, start interactive mode
+        const menu = new InteractiveMenu(options.path || process.cwd());
+        await menu.start();
         return;
       }
 
@@ -151,10 +154,13 @@ program.on('command:*', (operands) => {
   process.exit(1);
 });
 
-// Show help if no arguments provided
+// Start interactive mode if no arguments provided
 if (process.argv.length === 2) {
-  console.log(getHelpText());
-  process.exit(0);
+  const menu = new InteractiveMenu(process.cwd());
+  menu.start().catch(error => {
+    console.error(chalk.red('Interactive mode failed:'), error);
+    process.exit(1);
+  });
 }
 
 // Handle uncaught errors
