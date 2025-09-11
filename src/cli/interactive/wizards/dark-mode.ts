@@ -227,9 +227,17 @@ export class DarkModeWizard {
         color: 'yellow'
       }).start();
 
+      // Check for dark mode during critical steps
+      if (i === 0 || i === 1) {
+        await this.checkForMidProcessDarkMode(spinner, steps[i]);
+      }
+
       await this.delay(800 + Math.random() * 400);
       spinner.succeed(steps[i].replace('...', ''));
     }
+
+    // Final check before implementation
+    await this.checkForMidProcessDarkMode();
 
     // Call the actual dark mode implementation
     try {
@@ -323,6 +331,52 @@ export class DarkModeWizard {
       }
     } catch (error) {
       console.log(chalk.yellow('⚠️  Could not analyze project setup. Proceeding with wizard...\n'));
+    }
+  }
+
+  private async checkForMidProcessDarkMode(spinner?: any, currentStep?: string): Promise<void> {
+    try {
+      const analysis = await analyzeProject(this.projectPath);
+      
+      if (analysis.darkModeEnabled) {
+        if (spinner) {
+          spinner.warn(`${currentStep} - Dark mode detected during process!`);
+        }
+        
+        console.log(chalk.yellow('\n⚠️  Dark mode was detected during transformation!'));
+        console.log(chalk.gray('This could mean:'));
+        console.log(chalk.gray('  • Another process added dark mode setup'));
+        console.log(chalk.gray('  • Manual changes were made to the project'));
+        console.log(chalk.gray('  • A previous run partially completed'));
+        console.log('');
+        
+        const { action } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'action',
+            message: 'How would you like to proceed?',
+            choices: [
+              { name: 'Continue with current theme setup', value: 'continue' },
+              { name: 'Overwrite existing setup', value: 'overwrite' },
+              { name: 'Cancel transformation', value: 'cancel' }
+            ]
+          }
+        ]);
+        
+        if (action === 'cancel') {
+          console.log(chalk.yellow('\n📝 Transformation cancelled by user.'));
+          process.exit(0);
+        } else if (action === 'overwrite') {
+          console.log(chalk.yellow('\n⚠️  Overwriting existing dark mode setup...'));
+        } else {
+          console.log(chalk.cyan('\n✅ Continuing with existing setup...'));
+        }
+        
+        console.log('');
+      }
+    } catch (error) {
+      // If we can't analyze, just continue
+      console.log(chalk.gray('Note: Could not verify dark mode status during transformation.'));
     }
   }
 
