@@ -1,8 +1,15 @@
 # 🌙 Crow Agent
 
+<<<<<<< HEAD
 **Add dark/light mode support to any Tailwind project using natural language - all from your terminal.**
 
 Transform your project with simple commands like `crow "add dark mode"` without leaving your development environment.
+=======
+<img width="478" height="207" alt="Screenshot 2025-09-10 at 1 52 26 PM" src="https://github.com/user-attachments/assets/345878e7-7f32-4ff0-9358-7f22031c3d3d" />
+
+
+Automatically add dark/light mode functionality to Tailwind CSS projects through natural language commands.
+>>>>>>> a59fd3b0031fe6d080643e4644e6d64b4da19efa
 
 [![npm version](https://badge.fury.io/js/crow-agent.svg)](https://badge.fury.io/js/crow-agent)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -408,5 +415,8 @@ MIT License - see the [LICENSE](./LICENSE) file for details.
 ---
 
 **Made with 🌙 by [Alex McKee](https://github.com/alexmckee)**
+<<<<<<< HEAD
 
 Transform your Tailwind projects with natural language commands - no GUI required! 🚀
+=======
+>>>>>>> a59fd3b0031fe6d080643e4644e6d64b4da19efa
