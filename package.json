@@ -1,6 +1,6 @@
 {
   "name": "crow-agent",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Automatically add dark/light mode functionality to Tailwind CSS projects through natural language commands",
   "main": "dist/index.js",
   "bin": {
