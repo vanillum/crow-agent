@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Sun, Moon } from 'lucide-react';
 
 interface ThemeToggleProps {
   className?: string;
@@ -45,9 +46,9 @@ export function ThemeToggle({ className = '', size = 'md', variant = 'button' }:
   }
 
   const sizeClasses = {
-    sm: 'w-8 h-8 text-sm',
-    md: 'w-10 h-10 text-base',
-    lg: 'w-12 h-12 text-lg',
+    sm: { button: 'w-8 h-8', icon: 'w-4 h-4' },
+    md: { button: 'w-10 h-10', icon: 'w-5 h-5' },
+    lg: { button: 'w-12 h-12', icon: 'w-6 h-6' },
   };
 
   if (variant === 'switch') {
@@ -67,12 +68,15 @@ export function ThemeToggle({ className = '', size = 'md', variant = 'button' }:
         <span
           className={`
             inline-block w-4 h-4 transform transition-transform bg-white dark:bg-gray-300 rounded-full
+            flex items-center justify-center
             ${theme === 'dark' ? 'translate-x-6' : 'translate-x-1'}
           `}
         >
-          <span className="sr-only">
-            {theme === 'light' ? '☀️' : '🌙'}
-          </span>
+          {theme === 'light' ? (
+            <Sun className="w-2 h-2 text-yellow-500" />
+          ) : (
+            <Moon className="w-2 h-2 text-blue-400" />
+          )}
         </span>
       </button>
     );
@@ -88,15 +92,17 @@ export function ThemeToggle({ className = '', size = 'md', variant = 'button' }:
         text-gray-900 dark:text-gray-100
         hover:bg-gray-50 dark:hover:bg-gray-700
         focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2
-        ${sizeClasses[size]}
+        ${sizeClasses[size].button}
         ${className}
       `}
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
       title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
     >
-      <span role="img" aria-hidden="true">
-        {theme === 'light' ? '🌙' : '☀️'}
-      </span>
+      {theme === 'light' ? (
+        <Moon className={`${sizeClasses[size].icon} text-gray-600 dark:text-gray-300`} />
+      ) : (
+        <Sun className={`${sizeClasses[size].icon} text-yellow-500`} />
+      )}
     </button>
   );
 }
