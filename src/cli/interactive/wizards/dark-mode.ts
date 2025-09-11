@@ -8,6 +8,7 @@ import ora from 'ora';
 import { createProgressBar, formatStatus } from '../branding.js';
 import { addDarkModeCommand } from '../../commands/add-dark-mode.js';
 import { analyzeProject } from '../../../core/scanner.js';
+import { getAllThemePresets } from '../../../themes/presets.js';
 
 export interface DarkModeOptions {
   framework?: string;
@@ -18,6 +19,7 @@ export interface DarkModeOptions {
   commit: boolean;
   autoPlace?: boolean;
   placement?: string;
+  themePreset?: string;
 }
 
 export class DarkModeWizard {
@@ -74,7 +76,20 @@ export class DarkModeWizard {
   private async collectOptions(): Promise<DarkModeOptions> {
     console.log(chalk.white('Let\'s configure your theme switching implementation:\n'));
 
+    const themePresets = getAllThemePresets();
+
     const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'themePreset',
+        message: 'Choose a brand theme preset:',
+        choices: themePresets.map(preset => ({
+          name: `${preset.name} - ${preset.description}`,
+          value: preset.id,
+          short: preset.name
+        })),
+        default: 'vercel'
+      },
       {
         type: 'list',
         name: 'framework',
