@@ -239,7 +239,8 @@ export class DarkModeWizard {
         outputPath: options.output,
         backup: options.backup,
         noCommit: !options.commit,
-        verbose: false
+        verbose: false,
+        theme: options.themePreset
       });
     } catch (error) {
       throw new Error(`Implementation failed: ${error}`);

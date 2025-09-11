@@ -18,7 +18,7 @@ const program = new Command();
 program
   .name('crow')
   .description('Automatically add dark/light mode functionality to Tailwind CSS projects')
-  .version('0.2.4');
+  .version('0.2.5');
 
 // Natural language command interface
 program

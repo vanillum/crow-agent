@@ -32,7 +32,7 @@ export interface TransformationSummary {
 /**
  * Transform multiple component files
  */
-export async function transformFiles(files: ComponentFile[]): Promise<TransformationSummary> {
+export async function transformFiles(files: ComponentFile[], themeId?: string): Promise<TransformationSummary> {
   const results: TransformationResult[] = [];
   
   for (const file of files) {

@@ -21,6 +21,7 @@ export interface AddDarkModeOptions {
   noCommit?: boolean;
   verbose?: boolean;
   path?: string;
+  theme?: string;
 }
 
 export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Promise<void> {
@@ -90,7 +91,7 @@ export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Prom
       console.log(chalk.blue('\n📋 Dry Run - No changes will be made\n'));
       
       spinner.start('Analyzing transformations...');
-      const transformResults = await transformFiles(analysis.componentFiles);
+      const transformResults = await transformFiles(analysis.componentFiles, options.theme);
       spinner.succeed('Analysis complete');
 
       console.log(chalk.green(`\n✅ Would transform ${transformResults.successfulTransformations} files:`));
@@ -131,7 +132,7 @@ export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Prom
 
     // Step 5: Transform files
     spinner.start('Transforming component files...');
-    const transformResults = await transformFiles(analysis.componentFiles);
+    const transformResults = await transformFiles(analysis.componentFiles, options.theme);
     
     if (transformResults.failedTransformations > 0) {
       spinner.warn(`Transformed ${transformResults.successfulTransformations} files (${transformResults.failedTransformations} failed)`);
