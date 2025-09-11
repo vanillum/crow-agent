@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { createProgressBar, formatStatus } from '../branding.js';
 import { addDarkModeCommand } from '../../commands/add-dark-mode.js';
+import { analyzeProject } from '../../../core/scanner.js';
 
 export interface DarkModeOptions {
   framework?: string;
@@ -31,6 +32,9 @@ export class DarkModeWizard {
     console.log(chalk.yellow.bold('🎨 Theme Switching Implementation Wizard\n'));
     
     try {
+      // Step 0: Check existing setup
+      await this.checkExistingSetup();
+      
       // Step 1: Configuration
       const options = await this.collectOptions();
       
@@ -250,6 +254,60 @@ export class DarkModeWizard {
     console.log(chalk.gray('    </header>'));
     console.log(chalk.gray('  );'));
     console.log(chalk.gray('}'));
+  }
+
+  private async checkExistingSetup(): Promise<void> {
+    try {
+      const analysis = await analyzeProject(this.projectPath);
+      
+      if (analysis.darkModeEnabled) {
+        console.log(formatStatus('success', 'Dark mode is already enabled in this project!'));
+        console.log(chalk.gray(`  Framework: ${analysis.framework}`));
+        console.log(chalk.gray(`  Tailwind Version: ${analysis.tailwindVersion}`));
+        
+        if (analysis.tailwindVersion === 'v4' && analysis.tailwindCssFile) {
+          console.log(chalk.gray(`  CSS Configuration: ${analysis.tailwindCssFile}`));
+        } else if (analysis.tailwindConfigPath) {
+          console.log(chalk.gray(`  Config File: ${analysis.tailwindConfigPath}`));
+        }
+        
+        console.log('');
+        
+        const { proceed } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'proceed',
+            message: 'What would you like to do?',
+            choices: [
+              { name: 'Switch to a different theme preset', value: 'switch' },
+              { name: 'Overwrite current setup', value: 'overwrite' },
+              { name: 'Keep current setup and exit', value: 'keep' },
+              { name: 'Exit wizard', value: 'exit' }
+            ]
+          }
+        ]);
+        
+        if (proceed === 'exit' || proceed === 'keep') {
+          console.log(chalk.yellow('\n👍 Keeping existing dark mode setup.'));
+          process.exit(0);
+        }
+        
+        if (proceed === 'switch') {
+          console.log(chalk.cyan('\n🔄 Switching theme presets...\n'));
+        } else if (proceed === 'overwrite') {
+          console.log(chalk.yellow('\n⚠️  Overwriting existing setup...\n'));
+        }
+      } else {
+        console.log(formatStatus('warning', 'No existing dark mode setup detected.'));
+        console.log(chalk.gray(`  Framework: ${analysis.framework}`));
+        console.log(chalk.gray(`  Tailwind Version: ${analysis.tailwindVersion}`));
+        console.log(chalk.gray(`  Components found: ${analysis.totalComponents}`));
+        console.log(chalk.gray(`  Transformable components: ${analysis.transformableComponents}`));
+        console.log('');
+      }
+    } catch (error) {
+      console.log(chalk.yellow('⚠️  Could not analyze project setup. Proceeding with wizard...\n'));
+    }
   }
 
   private delay(ms: number): Promise<void> {

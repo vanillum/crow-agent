@@ -18,7 +18,7 @@ const program = new Command();
 program
   .name('crow')
   .description('Automatically add dark/light mode functionality to Tailwind CSS projects')
-  .version('0.1.0');
+  .version('0.2.1');
 
 // Natural language command interface
 program
@@ -154,14 +154,8 @@ program.on('command:*', (operands) => {
   process.exit(1);
 });
 
-// Start interactive mode if no arguments provided
-if (process.argv.length === 2) {
-  const menu = new InteractiveMenu(process.cwd());
-  menu.start().catch(error => {
-    console.error(chalk.red('Interactive mode failed:'), error);
-    process.exit(1);
-  });
-}
+// Interactive mode is handled in the main action above
+// No duplicate interactive mode startup needed here
 
 // Handle uncaught errors
 process.on('uncaughtException', (error) => {

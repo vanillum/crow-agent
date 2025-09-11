@@ -5,7 +5,7 @@
 import chalk from 'chalk';
 import ora from 'ora';
 import { CROW_LOGO, createProgressBar, formatStatus, DIVIDER } from './branding.js';
-// import { analyzeProject } from '../../core/analyzer.js'; // TODO: Implement analyzer
+import { analyzeProject, ProjectAnalysis } from '../../core/scanner.js';
 
 export interface ProjectDashboard {
   framework?: string;
@@ -29,7 +29,7 @@ export class InteractiveDashboard {
   async displayWelcome(): Promise<void> {
     console.clear();
     console.log(CROW_LOGO);
-    console.log(chalk.yellow('🌙 Crow Agent v0.2.0 - Interactive Mode\n'));
+    console.log(chalk.yellow('🌙 Crow Agent v0.2.1 - Interactive Mode\n'));
   }
 
   async analyzeProject(): Promise<ProjectDashboard> {
@@ -39,34 +39,16 @@ export class InteractiveDashboard {
     }).start();
 
     try {
-      // Simulate analysis with progress updates
-      spinner.text = 'Detecting framework...';
-      await this.delay(800);
+      // Update spinner text for real analysis steps
+      spinner.text = 'Detecting framework and configuration...';
       
-      spinner.text = 'Scanning Tailwind configuration...';
-      await this.delay(600);
+      // Use real project analysis
+      const realAnalysis: ProjectAnalysis = await analyzeProject(this.projectPath);
       
       spinner.text = 'Analyzing components...';
-      await this.delay(1000);
       
-      spinner.text = 'Checking theme switching status...';
-      await this.delay(500);
-
-      // Mock analysis for now - replace with actual analyzer
-      this.analysis = {
-        framework: 'Next.js + TypeScript',
-        hasTailwind: true,
-        hasThemeSwitching: false,
-        tailwindVersion: 'v4', // Mock v4 for demo
-        componentCount: 12,
-        transformableComponents: 8,
-        estimatedChanges: 45,
-        recommendations: [
-          'Ready for theme switching implementation',
-          'All components are compatible',
-          'Tailwind v4 detected - CSS-based configuration supported!'
-        ]
-      };
+      // Convert real analysis to dashboard format
+      this.analysis = this.convertAnalysisToDashboard(realAnalysis);
 
       spinner.succeed('Project analysis complete!');
       return this.analysis;
@@ -74,6 +56,59 @@ export class InteractiveDashboard {
       spinner.fail('Analysis failed');
       throw error;
     }
+  }
+
+  private convertAnalysisToDashboard(realAnalysis: ProjectAnalysis): ProjectDashboard {
+    // Generate framework display string
+    let frameworkDisplay: string = realAnalysis.framework;
+    if (realAnalysis.framework === 'nextjs') {
+      frameworkDisplay = 'Next.js';
+    } else if (realAnalysis.framework === 'react') {
+      frameworkDisplay = 'React';
+    } else if (realAnalysis.framework === 'vue') {
+      frameworkDisplay = 'Vue.js';
+    } else if (realAnalysis.framework === 'nuxt') {
+      frameworkDisplay = 'Nuxt.js';
+    } else if (realAnalysis.framework === 'html') {
+      frameworkDisplay = 'HTML/Vanilla JS';
+    }
+
+    // Add TypeScript detection if package.json exists
+    if (realAnalysis.hasPackageJson && realAnalysis.framework !== 'html') {
+      frameworkDisplay += ' + TypeScript';
+    }
+
+    // Generate recommendations based on real analysis
+    const recommendations: string[] = [];
+    
+    if (realAnalysis.hasTailwindConfig && !realAnalysis.darkModeEnabled) {
+      recommendations.push('Ready for theme switching implementation');
+    }
+    
+    if (realAnalysis.transformableComponents > 0) {
+      recommendations.push('Components are compatible for transformation');
+    }
+    
+    if (realAnalysis.tailwindVersion === 'v4') {
+      recommendations.push('Tailwind v4 detected - CSS-based configuration supported!');
+    } else if (realAnalysis.tailwindVersion === 'v3') {
+      recommendations.push('Tailwind v3 detected - config-based setup will be used');
+    }
+    
+    if (realAnalysis.darkModeEnabled) {
+      recommendations.push('Dark mode is already configured in this project');
+    }
+
+    return {
+      framework: frameworkDisplay,
+      hasTailwind: realAnalysis.hasTailwindConfig,
+      hasThemeSwitching: realAnalysis.darkModeEnabled,
+      tailwindVersion: realAnalysis.tailwindVersion,
+      componentCount: realAnalysis.totalComponents,
+      transformableComponents: realAnalysis.transformableComponents,
+      estimatedChanges: realAnalysis.estimatedChanges,
+      recommendations
+    };
   }
 
   displayAnalysis(analysis: ProjectDashboard): void {
