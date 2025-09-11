@@ -29,7 +29,7 @@ export class InteractiveDashboard {
   async displayWelcome(): Promise<void> {
     console.clear();
     console.log(CROW_LOGO);
-    console.log(chalk.yellow('🌙 Crow Agent v0.3.0 - Interactive Mode\n'));
+    console.log(chalk.yellow('🌙 Crow Agent v0.4.0 - Professional Edition\n'));
   }
 
   async analyzeProject(): Promise<ProjectDashboard> {

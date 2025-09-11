@@ -32,50 +32,50 @@ export const BRAND_PRESETS: Record<string, ThemePreset> = {
   vercel: {
     id: 'vercel',
     name: 'Vercel',
-    description: 'Clean black and white aesthetic with subtle grays',
+    description: 'Clean black and white aesthetic with professional contrast ratios',
     colors: {
       light: {
         background: '#ffffff',
-        foreground: '#000000',
+        foreground: '#0a0a0a',  // Improved contrast
         primary: '#000000',
-        secondary: '#666666',
+        secondary: '#525252',   // Better contrast than #666
         accent: '#0070f3',
         muted: '#fafafa',
-        border: '#eaeaea',
+        border: '#e5e5e5',     // Softer than #eaeaea
       },
       dark: {
-        background: '#000000',
-        foreground: '#ffffff',
+        background: '#0a0a0a',  // Near black like modern apps
+        foreground: '#fafafa',  // Softer than pure white
         primary: '#ffffff',
-        secondary: '#888888',
-        accent: '#0070f3',
-        muted: '#111111',
-        border: '#333333',
+        secondary: '#a3a3a3',   // Better dark mode contrast
+        accent: '#0084ff',      // Brighter for dark mode
+        muted: '#1a1a1a',      // Professional gray-850
+        border: '#2a2a2a',     // Professional gray-800
       },
     },
   },
   supabase: {
     id: 'supabase',
     name: 'Supabase',
-    description: 'Green-focused theme with modern gradients',
+    description: 'Green-focused theme with professional contrast and modern aesthetics',
     colors: {
       light: {
         background: '#ffffff',
         foreground: '#1f2937',
-        primary: '#10b981',
+        primary: '#059669',     // Slightly darker green for better contrast
         secondary: '#6b7280',
-        accent: '#3b82f6',
+        accent: '#2563eb',      // Improved blue contrast
         muted: '#f9fafb',
         border: '#e5e7eb',
       },
       dark: {
-        background: '#0f172a',
+        background: '#0a0a0a',  // Consistent dark background
         foreground: '#f8fafc',
         primary: '#10b981',
-        secondary: '#94a3b8',
+        secondary: '#9ca3af',   // Better contrast
         accent: '#3b82f6',
-        muted: '#1e293b',
-        border: '#334155',
+        muted: '#1a1a1a',      // Consistent with other themes
+        border: '#374151',     // Better dark border
       },
     },
   },
@@ -107,25 +107,25 @@ export const BRAND_PRESETS: Record<string, ThemePreset> = {
   openai: {
     id: 'openai',
     name: 'OpenAI',
-    description: 'Teal and warm theme inspired by ChatGPT',
+    description: 'Teal and warm theme inspired by ChatGPT with professional polish',
     colors: {
       light: {
         background: '#ffffff',
-        foreground: '#2d3748',
-        primary: '#10a37f',
-        secondary: '#718096',
-        accent: '#3182ce',
-        muted: '#f7fafc',
-        border: '#e2e8f0',
+        foreground: '#1f2937',    // Better contrast than #2d3748
+        primary: '#0d9488',       // Professional teal
+        secondary: '#6b7280',     // Consistent secondary
+        accent: '#2563eb',        // Better blue accent
+        muted: '#f9fafb',         // Consistent muted
+        border: '#e5e7eb',        // Standard border
       },
       dark: {
-        background: '#1a202c',
-        foreground: '#f7fafc',
-        primary: '#10a37f',
-        secondary: '#a0aec0',
-        accent: '#3182ce',
-        muted: '#2d3748',
-        border: '#4a5568',
+        background: '#0a0a0a',    // Consistent dark background
+        foreground: '#f9fafb',    // Softer than pure white
+        primary: '#14b8a6',       // Brighter teal for dark mode
+        secondary: '#9ca3af',     // Better dark contrast
+        accent: '#3b82f6',        // Consistent accent
+        muted: '#1a1a1a',        // Consistent muted
+        border: '#374151',        // Professional border
       },
     },
   },
