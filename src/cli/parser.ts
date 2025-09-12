@@ -3,7 +3,7 @@
  */
 
 export interface ParsedCommand {
-  action: 'add-dark-mode' | 'scan' | 'status' | 'help' | 'unknown';
+  action: 'add-dark-mode' | 'scan' | 'status' | 'analyze-brand' | 'help' | 'unknown';
   options: {
     dryRun?: boolean;
     force?: boolean;
@@ -31,6 +31,12 @@ export function parseCommand(input: string): ParsedCommand {
   // Define command patterns
   const patterns = [
     {
+      pattern: /(?:perfect|smart|intelligent|auto)\s+(?:dark\s*mode|theme)/i,
+      action: 'add-dark-mode' as const,
+      confidence: 0.95,
+      smart: true,
+    },
+    {
       pattern: /(?:add|enable|setup|create|implement)\s+(?:dark\s*mode|dark\s*theme|night\s*mode)/i,
       action: 'add-dark-mode' as const,
       confidence: 0.9,
@@ -44,6 +50,11 @@ export function parseCommand(input: string): ParsedCommand {
       pattern: /dark\s*mode/i,
       action: 'add-dark-mode' as const,
       confidence: 0.7,
+    },
+    {
+      pattern: /(?:analyze|extract)\s+(?:brand|colors?)/i,
+      action: 'analyze-brand' as const,
+      confidence: 0.9,
     },
     {
       pattern: /(?:scan|analyze|check|detect)\s*(?:project)?/i,
@@ -69,7 +80,8 @@ export function parseCommand(input: string): ParsedCommand {
     confidence: 0,
   };
 
-  for (const { pattern, action, confidence } of patterns) {
+  for (const patternObj of patterns) {
+    const { pattern, action, confidence } = patternObj;
     if (pattern.test(normalizedInput)) {
       if (confidence > bestMatch.confidence) {
         bestMatch = {
@@ -77,12 +89,24 @@ export function parseCommand(input: string): ParsedCommand {
           options: {},
           confidence,
         };
+        
+        // Enable smart mode for smart commands
+        if ('smart' in patternObj && (patternObj as any).smart) {
+          bestMatch.options.adaptive = true;
+          bestMatch.options.validate = true;
+        }
       }
     }
   }
 
   // Extract options from the input
   bestMatch.options = extractOptions(input);
+  
+  // Apply smart mode for intelligent commands
+  if (normalizedInput.includes('perfect') || normalizedInput.includes('smart') || normalizedInput.includes('intelligent')) {
+    bestMatch.options.adaptive = true;
+    bestMatch.options.validate = true;
+  }
 
   return bestMatch;
 }
@@ -173,12 +197,17 @@ crow-agent - Automatically add dark mode to Tailwind CSS projects
 
 USAGE:
   crow "add dark mode"                 Add dark mode to current project
+  crow "perfect dark mode"             🆕 AI-powered theme recommendation
   crow "scan project"                  Analyze project for dark mode compatibility
   crow "status"                        Show current project status
   crow "help"                          Show this help message
 
 EXAMPLES:
+  crow "perfect dark mode"             🆕 AI analyzes brand + recommends perfect theme
+  crow "smart dark mode"               🆕 Intelligent theme matching
   crow "add dark mode"                 Basic dark mode implementation
+  crow "add dark mode --adaptive"      🆕 With design intelligence
+  crow "add dark mode with linear theme" Specific theme selection
   crow "add dark mode --dry-run"       Preview changes without applying
   crow "add dark mode --force"         Overwrite existing dark mode setup
   crow "add dark mode --backup"        Create backup before changes

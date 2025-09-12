@@ -12,6 +12,7 @@ import { generateThemeToggleComponent, suggestComponentPlacement } from '../../c
 import { commitChanges } from '../../utils/git.js';
 import { autoPlaceThemeToggle } from '../../core/auto-placement.js';
 import { AdaptiveTransformer } from '../../adaptive/adaptive-transformer.js';
+import { SmartThemeRecommender } from '../../adaptive/smart-recommender.js';
 
 export interface AddDarkModeOptions {
   dryRun?: boolean;
@@ -43,8 +44,9 @@ export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Prom
   const projectPath = defaultOptions.path || process.cwd();
   const spinner = ora();
   
-  // Initialize adaptive transformer if needed
+  // Initialize adaptive transformer and smart recommender if needed
   const adaptiveTransformer = defaultOptions.adaptive ? new AdaptiveTransformer() : null;
+  const smartRecommender = defaultOptions.adaptive ? new SmartThemeRecommender() : null;
 
   try {
     console.log(chalk.blue.bold('🌙 Crow Agent - Adding Theme Switching Support\n'));
@@ -75,7 +77,48 @@ export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Prom
     let analysis = await analyzeProject(projectPath);
     spinner.succeed(`Analyzed ${analysis.totalComponents} components`);
     
-    // Step 2.5: Enhance with adaptive intelligence if requested
+    // Step 2.5: Smart theme recommendation if no theme specified
+    if (smartRecommender && !defaultOptions.theme) {
+      spinner.start('🧠 Analyzing brand colors for perfect theme match...');
+      
+      try {
+        const recommendation = await smartRecommender.recommendTheme(projectPath, analysis);
+        
+        spinner.succeed(`🎯 Smart recommendation: ${recommendation.recommended.themeName} (${(recommendation.confidence * 100).toFixed(1)}% match)`);
+        
+        // Display brand analysis
+        if (recommendation.brandProfile.primary) {
+          console.log(chalk.blue(`🎨 Detected brand color: ${recommendation.brandProfile.primary.color} (${recommendation.brandProfile.primary.usage} uses)`));
+        }
+        console.log(chalk.blue(`🏗️  Project archetype: ${recommendation.archetype}`));
+        console.log(chalk.blue(`🎭 Color temperature: ${recommendation.brandProfile.temperature}`));
+        
+        // Show reasoning
+        console.log(chalk.gray('\n💡 Why this theme:'));
+        recommendation.recommended.reasoning.forEach(reason => {
+          console.log(chalk.gray(`   • ${reason}`));
+        });
+        
+        // Show alternatives
+        if (recommendation.alternatives.length > 0) {
+          console.log(chalk.gray('\n🔄 Alternatives:'));
+          recommendation.alternatives.slice(0, 2).forEach(alt => {
+            console.log(chalk.gray(`   • ${alt.themeName} (${(alt.score * 100).toFixed(1)}%)`));
+          });
+        }
+        
+        console.log('');
+        
+        // Auto-apply the recommended theme
+        defaultOptions.theme = recommendation.recommended.themeId;
+        
+      } catch (error) {
+        spinner.warn('Brand analysis failed, using default theme');
+        console.log(chalk.yellow(`⚠️ ${error instanceof Error ? error.message : 'Unknown error'}`));
+      }
+    }
+    
+    // Step 2.6: Enhance with adaptive intelligence if requested
     if (adaptiveTransformer) {
       spinner.start('Applying adaptive intelligence...');
       analysis = await adaptiveTransformer.enhanceAnalysis(analysis, {

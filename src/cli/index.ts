@@ -10,6 +10,7 @@ import { parseCommand, validateCommand, getHelpText } from './parser.js';
 import { addDarkModeCommand } from './commands/add-dark-mode.js';
 import { scanCommand } from './commands/scan.js';
 import { statusCommand } from './commands/status.js';
+import { analyzeBrandCommand } from './commands/analyze-brand.js';
 import { InteractiveMenu } from './interactive/menu.js';
 
 const program = new Command();
@@ -18,7 +19,7 @@ const program = new Command();
 program
   .name('crow')
   .description('Automatically add dark/light mode functionality to Tailwind CSS projects')
-  .version('0.5.0');
+  .version('0.5.1');
 
 // Natural language command interface
 program
@@ -90,6 +91,13 @@ program
 
         case 'status':
           await statusCommand({
+            ...options,
+            ...parsed.options,
+          });
+          break;
+
+        case 'analyze-brand':
+          await analyzeBrandCommand({
             ...options,
             ...parsed.options,
           });
