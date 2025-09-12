@@ -9,6 +9,7 @@ import { createProgressBar, formatStatus } from '../branding.js';
 import { addDarkModeCommand } from '../../commands/add-dark-mode.js';
 import { analyzeProject } from '../../../core/scanner.js';
 import { getAllThemePresets } from '../../../themes/presets.js';
+import { autoPlaceThemeToggle } from '../../../core/auto-placement.js';
 
 export interface DarkModeOptions {
   framework?: string;
@@ -248,7 +249,9 @@ export class DarkModeWizard {
         backup: options.backup,
         noCommit: !options.commit,
         verbose: false,
-        theme: options.themePreset
+        theme: options.themePreset,
+        autoPlace: options.autoPlace,
+        placement: options.placement as 'auto' | 'header' | 'layout' | 'corner' | undefined
       });
     } catch (error) {
       throw new Error(`Implementation failed: ${error}`);

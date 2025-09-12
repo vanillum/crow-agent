@@ -19,6 +19,7 @@ export interface GeneratedComponent {
   framework: Framework;
   content: string;
   instructions: string[];
+  componentName: string;
 }
 
 /**
@@ -91,6 +92,7 @@ export async function generateThemeToggleComponent(options: ComponentGenerationO
         framework,
         content: jsContent,
         instructions: getHtmlInstructions(),
+        componentName,
       };
 
     default:
@@ -116,6 +118,7 @@ export async function generateThemeToggleComponent(options: ComponentGenerationO
     framework,
     content,
     instructions,
+    componentName,
   };
 }
 

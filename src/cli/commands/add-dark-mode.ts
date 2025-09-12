@@ -10,6 +10,7 @@ import { analyzeProject, validateProject } from '../../core/scanner.js';
 import { transformFiles, applyTransformations, createBackup, updateTailwindConfig } from '../../core/transformer.js';
 import { generateThemeToggleComponent, suggestComponentPlacement } from '../../core/generator.js';
 import { commitChanges } from '../../utils/git.js';
+import { autoPlaceThemeToggle } from '../../core/auto-placement.js';
 
 export interface AddDarkModeOptions {
   dryRun?: boolean;
@@ -22,10 +23,19 @@ export interface AddDarkModeOptions {
   verbose?: boolean;
   path?: string;
   theme?: string;
+  autoPlace?: boolean;
+  placement?: 'auto' | 'header' | 'layout' | 'corner';
 }
 
 export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Promise<void> {
-  const projectPath = options.path || process.cwd();
+  // Enable auto-placement by default for better UX
+  const defaultOptions = {
+    autoPlace: true,
+    placement: 'auto' as const,
+    ...options
+  };
+  
+  const projectPath = defaultOptions.path || process.cwd();
   const spinner = ora();
 
   try {
@@ -188,8 +198,34 @@ export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Prom
 
       spinner.succeed(`Generated ${component.framework} component at ${path.relative(projectPath, component.path)}`);
       
-      // Show usage instructions
-      if (options.verbose || transformResults.successfulTransformations === 0) {
+      // Step 7.5: Auto-place component if requested
+      if (defaultOptions.autoPlace) {
+        spinner.start('Auto-placing theme toggle in layout...');
+        
+        try {
+          const autoPlaceResult = await autoPlaceThemeToggle({
+            projectPath,
+            framework: analysis.framework,
+            componentName: component.componentName,
+            componentPath: component.path,
+            placement: defaultOptions.placement || 'auto'
+          });
+          
+          if (autoPlaceResult.success) {
+            const relativePath = path.relative(projectPath, autoPlaceResult.modifiedFile!);
+            spinner.succeed(`Auto-placed ${component.componentName} in ${relativePath} (${autoPlaceResult.insertionPoint})`);
+          } else {
+            spinner.warn(`Auto-placement failed: ${autoPlaceResult.error}`);
+            console.log(chalk.yellow('💡 You can manually import and place the component in your layout.'));
+          }
+        } catch (error) {
+          spinner.warn(`Auto-placement failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          console.log(chalk.yellow('💡 You can manually import and place the component in your layout.'));
+        }
+      }
+      
+      // Show usage instructions only if auto-placement wasn't used or failed
+      if (!defaultOptions.autoPlace && (defaultOptions.verbose || transformResults.successfulTransformations === 0)) {
         console.log(chalk.blue('\n📖 Usage Instructions:'));
         for (const instruction of component.instructions) {
           console.log(chalk.gray(`  ${instruction}`));

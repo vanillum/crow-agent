@@ -29,10 +29,10 @@ export interface ThemePreset {
 }
 
 export const BRAND_PRESETS: Record<string, ThemePreset> = {
-  vercel: {
-    id: 'vercel',
-    name: 'Vercel',
-    description: 'Clean black and white aesthetic with professional contrast ratios',
+  v0: {
+    id: 'v0',
+    name: 'v0 (Minimal Precision)',
+    description: 'Ultra-minimal with precise OKLCH values for perfect perceptual uniformity',
     colors: {
       light: {
         background: '#ffffff',
@@ -56,8 +56,8 @@ export const BRAND_PRESETS: Record<string, ThemePreset> = {
   },
   supabase: {
     id: 'supabase',
-    name: 'Supabase',
-    description: 'Green-focused theme with professional contrast and modern aesthetics',
+    name: 'Supabase (Clean Hex System)',
+    description: 'Clean, high-contrast hex values with signature green brand integration',
     colors: {
       light: {
         background: '#ffffff',
@@ -81,8 +81,8 @@ export const BRAND_PRESETS: Record<string, ThemePreset> = {
   },
   linear: {
     id: 'linear',
-    name: 'Linear',
-    description: 'Purple and blue gradient theme with clean typography',
+    name: 'Linear (Sophisticated LCH)',
+    description: 'Advanced LCH color science with consistent hue angles for professional applications',
     colors: {
       light: {
         background: '#ffffff',
@@ -106,8 +106,8 @@ export const BRAND_PRESETS: Record<string, ThemePreset> = {
   },
   openai: {
     id: 'openai',
-    name: 'OpenAI',
-    description: 'Teal and warm theme inspired by ChatGPT with professional polish',
+    name: 'OpenAI (Balanced Contrast)', 
+    description: 'High-contrast system with strategic blue accents for professional AI applications',
     colors: {
       light: {
         background: '#ffffff',

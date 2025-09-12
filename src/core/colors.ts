@@ -233,29 +233,95 @@ function getThemeSpecificMapping(className: string, themeId: string): string | n
 
   const mapping = themeColorMappings[className];
   if (mapping) {
-    // For theme-specific mappings, we want to use actual theme colors instead of generic grays
-    if (themeId === 'vercel') {
-      // Vercel uses pure black/white for strong contrast
+    // Professional theme-specific mappings using exact design system colors
+    if (themeId === 'v0') {
+      // Ultra-minimal with precise OKLCH values for perfect perceptual uniformity
       switch (className) {
         case 'bg-white':
-          return 'bg-white dark:bg-black';
+          return 'bg-[#FBFBFE] dark:bg-[oklch(0.145_0_0)]';
         case 'bg-gray-50':
         case 'bg-gray-100':
-          return `${className} dark:bg-gray-900`;
+          return `bg-[oklch(0.946_0_0)] dark:bg-[oklch(0.182_0_0)]`;
         case 'bg-gray-900':
-          return 'bg-gray-900 dark:bg-white';
-        case 'text-black':
-          return 'text-black dark:text-white';
-        case 'text-white':
-          return 'text-white dark:text-black';
+          return 'bg-[oklch(0_0_0)] dark:bg-[oklch(0.946_0_0)]';
         case 'text-gray-900':
-          return 'text-gray-900 dark:text-gray-100';
+          return 'text-[oklch(0_0_0)] dark:text-[oklch(0.946_0_0)]';
+        case 'text-gray-700':
+          return 'text-[oklch(0.39_0_0)] dark:text-[oklch(0.706_0_0)]';
         case 'text-gray-600':
-          return 'text-gray-600 dark:text-gray-300';
+          return 'text-[oklch(0.706_0_0)] dark:text-[oklch(0.39_0_0)]';
         case 'border-gray-200':
-          return 'border-gray-200 dark:border-gray-800';
+          return 'border-[oklch(0.946_0_0)] dark:border-[oklch(0.239_0_0)]';
+      }
+    }
+    
+    if (themeId === 'linear') {
+      // Advanced LCH color science with consistent hue angles
+      switch (className) {
+        case 'bg-white':
+          return 'bg-white dark:bg-[lch(12.236_2.213_272.695)]';
+        case 'bg-gray-50':
+          return 'bg-[#FBFBFE] dark:bg-[lch(17.236_4.213_272.695)]';
+        case 'bg-gray-100':
+          return 'bg-[lch(96.667_0_282.863)] dark:bg-[lch(18.236_2.213_272.695)]';
+        case 'bg-gray-200':
+          return 'bg-[lch(91.224_2.106_272.695)] dark:bg-[lch(20.636_4.613_272.695)]';
+        case 'text-gray-900':
+          return 'text-[lch(18.664_4.784_272.695)] dark:text-[lch(91.024_1.106_272.695)]';
+        case 'text-gray-700':
+          return 'text-[lch(64.094_1.106_272.695)] dark:text-[lch(64.894_2.106_272.695)]';
+        case 'text-gray-600':
+          return 'text-[#6B6F76] dark:text-[lch(64.094_1.106_272.695)]';
+        case 'border-gray-200':
+          return 'border-[lch(91.224_2.106_272.695)] dark:border-[lch(22.236_2.613_272.695)]';
+      }
+    }
+    
+    if (themeId === 'supabase') {
+      // Clean hex system with signature green brand integration
+      switch (className) {
+        case 'bg-white':
+          return 'bg-[#FAFAFA] dark:bg-[#171717]';
+        case 'bg-gray-50':
+          return 'bg-[#FAFAFA] dark:bg-[#1F1F1F]';
+        case 'bg-gray-100':
+          return 'bg-[#F3F3F3] dark:bg-[#212121]';
+        case 'bg-gray-900':
+          return 'bg-[#171717] dark:bg-[#FAFAFA]';
+        case 'text-gray-900':
+          return 'text-[#171717] dark:text-[#FAFAFA]';
+        case 'text-gray-700':
+          return 'text-[#454545] dark:text-[#B4B4B4]';
+        case 'text-gray-600':
+          return 'text-[#898989] dark:text-[#898989]';
+        case 'border-gray-200':
+          return 'border-[#B4B4B4] dark:border-[#313131]';
         case 'border-gray-300':
-          return 'border-gray-300 dark:border-gray-700';
+          return 'border-[#898989] dark:border-[#454545]';
+      }
+    }
+    
+    if (themeId === 'openai') {
+      // High-contrast system with strategic blue accents
+      switch (className) {
+        case 'bg-white':
+          return 'bg-white dark:bg-[#0D0D0D]';
+        case 'bg-gray-50':
+          return 'bg-[#F9F9F9] dark:bg-[#171717]';
+        case 'bg-gray-100':
+          return 'bg-[#F3F3F3] dark:bg-[#212121]';
+        case 'bg-gray-900':
+          return 'bg-[#0D0D0D] dark:bg-[#F3F3F3]';
+        case 'text-gray-900':
+          return 'text-[#0D0D0D] dark:text-[#F3F3F3]';
+        case 'text-gray-700':
+          return 'text-[#303030] dark:text-[#AFAFAF]';
+        case 'text-gray-600':
+          return 'text-[#424242] dark:text-[#424242]';
+        case 'border-gray-200':
+          return 'border-[#F3F3F3] dark:border-[#303030]';
+        case 'border-gray-300':
+          return 'border-[#AFAFAF] dark:border-[#424242]';
       }
     }
     
