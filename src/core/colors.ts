@@ -234,6 +234,31 @@ function getThemeSpecificMapping(className: string, themeId: string): string | n
   const mapping = themeColorMappings[className];
   if (mapping) {
     // Professional theme-specific mappings using exact design system colors
+    if (themeId === 'vercel') {
+      // Legacy Vercel theme - pure black/white for strong contrast
+      switch (className) {
+        case 'bg-white':
+          return 'bg-white dark:bg-black';
+        case 'bg-gray-50':
+        case 'bg-gray-100':
+          return `${className} dark:bg-gray-900`;
+        case 'bg-gray-900':
+          return 'bg-gray-900 dark:bg-white';
+        case 'text-black':
+          return 'text-black dark:text-white';
+        case 'text-white':
+          return 'text-white dark:text-black';
+        case 'text-gray-900':
+          return 'text-gray-900 dark:text-gray-100';
+        case 'text-gray-600':
+          return 'text-gray-600 dark:text-gray-300';
+        case 'border-gray-200':
+          return 'border-gray-200 dark:border-gray-800';
+        case 'border-gray-300':
+          return 'border-gray-300 dark:border-gray-700';
+      }
+    }
+    
     if (themeId === 'v0') {
       // Ultra-minimal with precise OKLCH values for perfect perceptual uniformity
       switch (className) {

@@ -175,6 +175,13 @@ export async function autoPlaceThemeToggle(options: AutoPlacementOptions): Promi
   // Choose best layout file
   const targetLayout = chooseBestLayout(layoutFiles, placement);
   
+  if (!targetLayout) {
+    return {
+      success: false,
+      error: 'No suitable layout file found for auto-placement'
+    };
+  }
+  
   // Inject component
   return await injectThemeToggle({
     layoutFile: targetLayout,
@@ -187,7 +194,9 @@ export async function autoPlaceThemeToggle(options: AutoPlacementOptions): Promi
 /**
  * Choose the best layout file for placement
  */
-function chooseBestLayout(layoutFiles: LayoutFileInfo[], placement: string): LayoutFileInfo {
+function chooseBestLayout(layoutFiles: LayoutFileInfo[], placement: string): LayoutFileInfo | null {
+  if (layoutFiles.length === 0) return null;
+  
   // Prefer App Router over Pages Router for Next.js
   const appRouter = layoutFiles.find(f => f.type === 'app-router');
   if (appRouter) return appRouter;

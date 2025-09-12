@@ -112,26 +112,29 @@ function extractOptions(input: string): ParsedCommand['options'] {
 
   // Extract framework specification
   const frameworkMatch = input.match(/(?:--framework|--for)\s+(react|vue|html|nextjs|nuxt)/i);
-  if (frameworkMatch) {
+  if (frameworkMatch && frameworkMatch[1]) {
     options.framework = frameworkMatch[1].toLowerCase();
   }
 
   // Extract output path
   const outputMatch = input.match(/(?:--output|--out)\s+([^\s]+)/i);
-  if (outputMatch) {
+  if (outputMatch && outputMatch[1]) {
     options.outputPath = outputMatch[1];
   }
 
   // Extract component name
   const componentMatch = input.match(/(?:--component|--name)\s+([^\s]+)/i);
-  if (componentMatch) {
+  if (componentMatch && componentMatch[1]) {
     options.componentName = componentMatch[1];
   }
 
   // Extract theme specification
-  const themeMatch = input.match(/(?:with|using|apply|--theme)\s+(vercel|supabase|linear|openai|custom)\s*(?:theme)?/i);
-  if (themeMatch) {
-    options.theme = themeMatch[1].toLowerCase();
+  const themeMatch = input.match(/(?:with|using|apply|--theme)\s+(v0|vercel|supabase|linear|openai|custom)\s*(?:theme)?/i);
+  if (themeMatch && themeMatch[1]) {
+    let theme = themeMatch[1].toLowerCase();
+    // Map vercel to v0 for backward compatibility
+    if (theme === 'vercel') theme = 'v0';
+    options.theme = theme;
   }
 
   return options;

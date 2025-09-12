@@ -29,6 +29,31 @@ export interface ThemePreset {
 }
 
 export const BRAND_PRESETS: Record<string, ThemePreset> = {
+  vercel: {
+    id: 'vercel',
+    name: 'Vercel (Legacy)',
+    description: 'Clean black and white aesthetic with professional contrast ratios',
+    colors: {
+      light: {
+        background: '#ffffff',
+        foreground: '#0a0a0a',
+        primary: '#000000',
+        secondary: '#525252',
+        accent: '#0070f3',
+        muted: '#fafafa',
+        border: '#e5e5e5',
+      },
+      dark: {
+        background: '#0a0a0a',
+        foreground: '#fafafa',
+        primary: '#ffffff',
+        secondary: '#a3a3a3',
+        accent: '#0084ff',
+        muted: '#1a1a1a',
+        border: '#2a2a2a',
+      },
+    },
+  },
   v0: {
     id: 'v0',
     name: 'v0 (Minimal Precision)',

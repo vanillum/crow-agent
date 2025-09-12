@@ -65,7 +65,20 @@ export async function transformFiles(files: ComponentFile[], themeId?: string): 
  * Transform a single component file
  */
 export async function transformFile(file: ComponentFile, themeId?: string): Promise<TransformationResult> {
-  const originalContent = file.content || await fs.readFile(file.path, 'utf-8');
+  let originalContent: string;
+  try {
+    originalContent = file.content || await fs.readFile(file.path, 'utf-8');
+  } catch (error) {
+    return {
+      filePath: file.path,
+      success: false,
+      error: `Failed to read file: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      originalContent: '',
+      transformedContent: '',
+      changesCount: 0,
+      transformedClasses: [],
+    };
+  }
   
   let transformedContent: string;
   let transformedClasses: string[] = [];
@@ -147,13 +160,15 @@ async function transformReactFile(content: string, themeId?: string): Promise<{ 
           } else if (t.isJSXExpressionContainer(value)) {
             // Handle template literals and complex expressions
             if (t.isTemplateLiteral(value.expression)) {
-              const quasi = value.expression.quasis[0];
-              const shouldTransform = themeId || !hasExistingDarkVariant(quasi.value.raw);
-              if (quasi && shouldTransform) {
+              const quasi = value.expression.quasis?.[0];
+              if (quasi) {
+                const shouldTransform = themeId || !hasExistingDarkVariant(quasi.value.raw);
+                if (shouldTransform) {
                 const transformed = transformTailwindClasses(quasi.value.raw, themeId);
                 if (transformed !== quasi.value.raw) {
                   transformedClasses.push(quasi.value.raw);
                   // This is more complex for template literals, we'll use regex fallback
+                }
                 }
               }
             }

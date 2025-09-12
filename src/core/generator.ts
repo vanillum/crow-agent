@@ -180,7 +180,7 @@ export async function suggestComponentPlacement(projectPath: string, framework: 
       }
       
       return {
-        suggested: reactPaths[0],
+        suggested: reactPaths[0] || path.join(projectPath, 'src'),
         alternatives: alternatives.slice(1),
       };
 
@@ -203,7 +203,7 @@ export async function suggestComponentPlacement(projectPath: string, framework: 
       }
       
       return {
-        suggested: vuePaths[0],
+        suggested: vuePaths[0] || path.join(projectPath, 'src'),
         alternatives: alternatives.slice(1),
       };
 
@@ -227,7 +227,7 @@ export async function suggestComponentPlacement(projectPath: string, framework: 
       }
       
       return {
-        suggested: htmlPaths[0],
+        suggested: htmlPaths[0] || path.join(projectPath, 'public'),
         alternatives: alternatives.slice(1),
       };
 
