@@ -1,6 +1,7 @@
 /**
  * Comprehensive color mapping system for converting Tailwind classes to dark mode variants
  */
+import { getThemePreset } from '../themes/presets.js';
 
 export interface ColorMapping {
   light: string;
@@ -170,18 +171,172 @@ export const colorMappings: Record<string, string> = {
 };
 
 /**
+ * Convert hex color to Tailwind-compatible class approximation
+ */
+function hexToTailwindClass(hex: string, prefix: string): string {
+  // This is a simplified mapping - in practice you might want more sophisticated color matching
+  const colorMap: Record<string, string> = {
+    // Blacks and whites
+    '#000000': 'black',
+    '#ffffff': 'white',
+    '#0a0a0a': 'black',    // Vercel dark background should map to black
+    '#fafafa': 'gray-50',
+    '#1a1a1a': 'gray-800',
+    '#2a2a2a': 'gray-700',
+    // Grays
+    '#525252': 'gray-500',
+    '#a3a3a3': 'gray-400',
+    '#e5e5e5': 'gray-300',
+    // Vercel-specific
+    '#0070f3': 'blue-500',
+    '#0084ff': 'blue-400',
+    // Supabase greens
+    '#059669': 'green-600',
+    '#10b981': 'green-500',
+    // Linear purples
+    '#8b5cf6': 'purple-500',
+    '#a78bfa': 'purple-400',
+    // OpenAI teals
+    '#0d9488': 'teal-600',
+    '#14b8a6': 'teal-500',
+  };
+  
+  const tailwindColor = colorMap[hex.toLowerCase()];
+  return tailwindColor ? `${prefix}-${tailwindColor}` : '';
+}
+
+/**
+ * Get theme-specific color mapping for a Tailwind class
+ */
+function getThemeSpecificMapping(className: string, themeId: string): string | null {
+  const theme = getThemePreset(themeId);
+  if (!theme) return null;
+
+  // Map common Tailwind classes to theme colors
+  const themeColorMappings: Record<string, { light: string; dark: string }> = {
+    // Background mappings
+    'bg-white': { light: 'bg-white', dark: hexToTailwindClass(theme.colors.dark.background, 'bg') || 'bg-gray-900' },
+    'bg-gray-50': { light: 'bg-gray-50', dark: hexToTailwindClass(theme.colors.dark.muted, 'bg') || 'bg-gray-800' },
+    'bg-gray-100': { light: 'bg-gray-100', dark: hexToTailwindClass(theme.colors.dark.muted, 'bg') || 'bg-gray-800' },
+    'bg-gray-900': { light: 'bg-gray-900', dark: hexToTailwindClass(theme.colors.dark.background, 'bg') || 'bg-white' },
+
+    // Text mappings
+    'text-black': { light: 'text-black', dark: hexToTailwindClass(theme.colors.dark.foreground, 'text') || 'text-white' },
+    'text-white': { light: 'text-white', dark: hexToTailwindClass(theme.colors.dark.background, 'text') || 'text-black' },
+    'text-gray-900': { light: 'text-gray-900', dark: hexToTailwindClass(theme.colors.dark.foreground, 'text') || 'text-gray-100' },
+    'text-gray-600': { light: 'text-gray-600', dark: hexToTailwindClass(theme.colors.dark.secondary, 'text') || 'text-gray-400' },
+
+    // Border mappings
+    'border-gray-200': { light: 'border-gray-200', dark: hexToTailwindClass(theme.colors.dark.border, 'border') || 'border-gray-700' },
+    'border-gray-300': { light: 'border-gray-300', dark: hexToTailwindClass(theme.colors.dark.border, 'border') || 'border-gray-600' },
+  };
+
+  const mapping = themeColorMappings[className];
+  if (mapping) {
+    // For theme-specific mappings, we want to use actual theme colors instead of generic grays
+    if (themeId === 'vercel') {
+      // Vercel uses pure black/white for strong contrast
+      switch (className) {
+        case 'bg-white':
+          return 'bg-white dark:bg-black';
+        case 'bg-gray-50':
+        case 'bg-gray-100':
+          return `${className} dark:bg-gray-900`;
+        case 'bg-gray-900':
+          return 'bg-gray-900 dark:bg-white';
+        case 'text-black':
+          return 'text-black dark:text-white';
+        case 'text-white':
+          return 'text-white dark:text-black';
+        case 'text-gray-900':
+          return 'text-gray-900 dark:text-gray-100';
+        case 'text-gray-600':
+          return 'text-gray-600 dark:text-gray-300';
+        case 'border-gray-200':
+          return 'border-gray-200 dark:border-gray-800';
+        case 'border-gray-300':
+          return 'border-gray-300 dark:border-gray-700';
+      }
+    }
+    
+    return `${mapping.light} dark:${mapping.dark}`;
+  }
+
+  return null;
+}
+
+/**
  * Transform a Tailwind class to include dark mode variant
  */
-export function transformTailwindClass(className: string): string {
+export function transformTailwindClass(className: string, themeId?: string): string {
+  // If a theme is specified, use theme-specific color mappings
+  if (themeId) {
+    const themeMapping = getThemeSpecificMapping(className, themeId);
+    if (themeMapping) {
+      return themeMapping;
+    }
+  }
+  
+  // Fall back to generic color mappings
   return colorMappings[className] || className;
+}
+
+/**
+ * Transform an existing class string that may already have dark variants
+ * This replaces existing dark variants with theme-specific ones
+ */
+export function transformExistingClasses(classString: string, themeId?: string): string {
+  if (!themeId) {
+    return classString;
+  }
+
+  const classes = classString.split(/\s+/).filter(Boolean);
+  const transformedClasses: string[] = [];
+  
+  let i = 0;
+  while (i < classes.length) {
+    const cls = classes[i];
+    
+    // If this is a base class that might have a dark variant following it
+    if (!cls.startsWith('dark:')) {
+      const themeMapping = getThemeSpecificMapping(cls, themeId);
+      if (themeMapping) {
+        // Check if the next class is a dark variant of this class
+        const nextClass = i + 1 < classes.length ? classes[i + 1] : null;
+        if (nextClass && nextClass.startsWith('dark:')) {
+          // Replace both the base class and its dark variant with theme-specific mapping
+          transformedClasses.push(themeMapping);
+          i += 2; // Skip both current and next class
+          continue;
+        } else {
+          // Just add the theme mapping
+          transformedClasses.push(themeMapping);
+          i++;
+          continue;
+        }
+      }
+    }
+    
+    // For any class that doesn't have a theme mapping, keep it as-is
+    transformedClasses.push(cls);
+    i++;
+  }
+  
+  return transformedClasses.join(' ');
 }
 
 /**
  * Transform a string containing multiple Tailwind classes
  */
-export function transformTailwindClasses(classString: string): string {
+export function transformTailwindClasses(classString: string, themeId?: string): string {
+  // If there's a theme and the string might already have dark variants, use the new logic
+  if (themeId && hasExistingDarkVariant(classString)) {
+    return transformExistingClasses(classString, themeId);
+  }
+  
+  // Otherwise, use the original logic
   const classes = classString.split(/\s+/).filter(Boolean);
-  const transformedClasses = classes.map(transformTailwindClass);
+  const transformedClasses = classes.map(cls => transformTailwindClass(cls, themeId));
   return transformedClasses.join(' ');
 }
 

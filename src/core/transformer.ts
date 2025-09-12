@@ -37,7 +37,7 @@ export async function transformFiles(files: ComponentFile[], themeId?: string): 
   
   for (const file of files) {
     try {
-      const result = await transformFile(file);
+      const result = await transformFile(file, themeId);
       results.push(result);
     } catch (error) {
       results.push({
@@ -64,7 +64,7 @@ export async function transformFiles(files: ComponentFile[], themeId?: string): 
 /**
  * Transform a single component file
  */
-export async function transformFile(file: ComponentFile): Promise<TransformationResult> {
+export async function transformFile(file: ComponentFile, themeId?: string): Promise<TransformationResult> {
   const originalContent = file.content || await fs.readFile(file.path, 'utf-8');
   
   let transformedContent: string;
@@ -73,27 +73,27 @@ export async function transformFile(file: ComponentFile): Promise<Transformation
   switch (file.framework) {
     case 'react':
     case 'nextjs':
-      ({ content: transformedContent, transformedClasses } = await transformReactFile(originalContent));
+      ({ content: transformedContent, transformedClasses } = await transformReactFile(originalContent, themeId));
       break;
     case 'vue':
     case 'nuxt':
-      ({ content: transformedContent, transformedClasses } = await transformVueFile(originalContent));
+      ({ content: transformedContent, transformedClasses } = await transformVueFile(originalContent, themeId));
       break;
     case 'html':
-      ({ content: transformedContent, transformedClasses } = transformHtmlFile(originalContent));
+      ({ content: transformedContent, transformedClasses } = transformHtmlFile(originalContent, themeId));
       break;
     default:
       // Try to detect by file extension
       const ext = path.extname(file.path).toLowerCase();
       if (['.jsx', '.tsx'].includes(ext)) {
-        ({ content: transformedContent, transformedClasses } = await transformReactFile(originalContent));
+        ({ content: transformedContent, transformedClasses } = await transformReactFile(originalContent, themeId));
       } else if (ext === '.vue') {
-        ({ content: transformedContent, transformedClasses } = await transformVueFile(originalContent));
+        ({ content: transformedContent, transformedClasses } = await transformVueFile(originalContent, themeId));
       } else if (ext === '.html') {
-        ({ content: transformedContent, transformedClasses } = transformHtmlFile(originalContent));
+        ({ content: transformedContent, transformedClasses } = transformHtmlFile(originalContent, themeId));
       } else {
         // Generic text-based transformation as fallback
-        ({ content: transformedContent, transformedClasses } = transformGeneric(originalContent));
+        ({ content: transformedContent, transformedClasses } = transformGeneric(originalContent, themeId));
       }
   }
 
@@ -112,7 +112,7 @@ export async function transformFile(file: ComponentFile): Promise<Transformation
 /**
  * Transform React/JSX files
  */
-async function transformReactFile(content: string): Promise<{ content: string; transformedClasses: string[] }> {
+async function transformReactFile(content: string, themeId?: string): Promise<{ content: string; transformedClasses: string[] }> {
   const transformedClasses: string[] = [];
   
   try {
@@ -131,8 +131,10 @@ async function transformReactFile(content: string): Promise<{ content: string; t
           const value = path.node.value;
           
           if (t.isStringLiteral(value)) {
-            if (!hasExistingDarkVariant(value.value)) {
-              const transformed = transformTailwindClasses(value.value);
+            // When we have a themeId, we want to transform even if dark variants exist
+            const shouldTransform = themeId || !hasExistingDarkVariant(value.value);
+            if (shouldTransform) {
+              const transformed = transformTailwindClasses(value.value, themeId);
               if (transformed !== value.value) {
                 transformedClasses.push(value.value);
                 replacements.push({
@@ -146,8 +148,9 @@ async function transformReactFile(content: string): Promise<{ content: string; t
             // Handle template literals and complex expressions
             if (t.isTemplateLiteral(value.expression)) {
               const quasi = value.expression.quasis[0];
-              if (quasi && !hasExistingDarkVariant(quasi.value.raw)) {
-                const transformed = transformTailwindClasses(quasi.value.raw);
+              const shouldTransform = themeId || !hasExistingDarkVariant(quasi.value.raw);
+              if (quasi && shouldTransform) {
+                const transformed = transformTailwindClasses(quasi.value.raw, themeId);
                 if (transformed !== quasi.value.raw) {
                   transformedClasses.push(quasi.value.raw);
                   // This is more complex for template literals, we'll use regex fallback
@@ -170,20 +173,20 @@ async function transformReactFile(content: string): Promise<{ content: string; t
 
     // Fallback to regex-based transformation for complex cases
     if (replacements.length === 0) {
-      return transformGeneric(content);
+      return transformGeneric(content, themeId);
     }
 
     return { content: modifiedContent, transformedClasses };
   } catch (error) {
     // Fallback to generic transformation if AST parsing fails
-    return transformGeneric(content);
+    return transformGeneric(content, themeId);
   }
 }
 
 /**
  * Transform Vue single-file components
  */
-async function transformVueFile(content: string): Promise<{ content: string; transformedClasses: string[] }> {
+async function transformVueFile(content: string, themeId?: string): Promise<{ content: string; transformedClasses: string[] }> {
   const transformedClasses: string[] = [];
   
   try {
@@ -195,7 +198,7 @@ async function transformVueFile(content: string): Promise<{ content: string; tra
       const templateStart = content.indexOf(templateContent);
       
       const { content: transformedTemplate, transformedClasses: templateClasses } = 
-        transformHtmlContent(templateContent);
+        transformHtmlContent(templateContent, themeId);
       
       if (templateClasses.length > 0) {
         modifiedContent = 
@@ -209,32 +212,33 @@ async function transformVueFile(content: string): Promise<{ content: string; tra
     return { content: modifiedContent, transformedClasses };
   } catch (error) {
     // Fallback to generic transformation if Vue parsing fails
-    return transformGeneric(content);
+    return transformGeneric(content, themeId);
   }
 }
 
 /**
  * Transform HTML files
  */
-function transformHtmlFile(content: string): { content: string; transformedClasses: string[] } {
-  return transformHtmlContent(content);
+function transformHtmlFile(content: string, themeId?: string): { content: string; transformedClasses: string[] } {
+  return transformHtmlContent(content, themeId);
 }
 
 /**
  * Transform HTML content (used by both HTML files and Vue templates)
  */
-function transformHtmlContent(content: string): { content: string; transformedClasses: string[] } {
+function transformHtmlContent(content: string, themeId?: string): { content: string; transformedClasses: string[] } {
   const transformedClasses: string[] = [];
   
   // Regular expression to find class attributes
   const classRegex = /(?:class|:class)=["']([^"']*?)["']/gi;
   
   const transformedContent = content.replace(classRegex, (match, classString) => {
-    if (hasExistingDarkVariant(classString)) {
+    const shouldTransform = themeId || !hasExistingDarkVariant(classString);
+    if (!shouldTransform) {
       return match;
     }
     
-    const transformed = transformTailwindClasses(classString);
+    const transformed = transformTailwindClasses(classString, themeId);
     if (transformed !== classString) {
       transformedClasses.push(classString);
       return match.replace(classString, transformed);
@@ -249,7 +253,7 @@ function transformHtmlContent(content: string): { content: string; transformedCl
 /**
  * Generic text-based transformation (fallback)
  */
-function transformGeneric(content: string): { content: string; transformedClasses: string[] } {
+function transformGeneric(content: string, themeId?: string): { content: string; transformedClasses: string[] } {
   const transformedClasses: string[] = [];
   
   // More comprehensive regex patterns for different attribute styles
@@ -263,11 +267,12 @@ function transformGeneric(content: string): { content: string; transformedClasse
   
   for (const pattern of patterns) {
     modifiedContent = modifiedContent.replace(pattern, (match, classString) => {
-      if (hasExistingDarkVariant(classString)) {
+      const shouldTransform = themeId || !hasExistingDarkVariant(classString);
+      if (!shouldTransform) {
         return match;
       }
       
-      const transformed = transformTailwindClasses(classString);
+      const transformed = transformTailwindClasses(classString, themeId);
       if (transformed !== classString) {
         transformedClasses.push(classString);
         return match.replace(classString, transformed);

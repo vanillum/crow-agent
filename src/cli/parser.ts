@@ -13,6 +13,7 @@ export interface ParsedCommand {
     componentName?: string;
     noCommit?: boolean;
     verbose?: boolean;
+    theme?: string;
   };
   confidence: number;
 }
@@ -125,6 +126,12 @@ function extractOptions(input: string): ParsedCommand['options'] {
   const componentMatch = input.match(/(?:--component|--name)\s+([^\s]+)/i);
   if (componentMatch) {
     options.componentName = componentMatch[1];
+  }
+
+  // Extract theme specification
+  const themeMatch = input.match(/(?:with|using|apply|--theme)\s+(vercel|supabase|linear|openai|custom)\s*(?:theme)?/i);
+  if (themeMatch) {
+    options.theme = themeMatch[1].toLowerCase();
   }
 
   return options;
