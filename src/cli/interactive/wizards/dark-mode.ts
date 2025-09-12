@@ -26,6 +26,7 @@ export interface DarkModeOptions {
 export class DarkModeWizard {
   private projectPath: string;
   private lastOptions?: DarkModeOptions;
+  private handledExistingSetup = false;
 
   constructor(projectPath: string = process.cwd()) {
     this.projectPath = projectPath;
@@ -228,8 +229,8 @@ export class DarkModeWizard {
         color: 'yellow'
       }).start();
 
-      // Check for dark mode during critical steps
-      if (i === 0 || i === 1) {
+      // Check for dark mode during critical steps (skip if already handled in initial check)
+      if ((i === 0 || i === 1) && !this.handledExistingSetup) {
         await this.checkForMidProcessDarkMode(spinner, steps[i]);
       }
 
@@ -324,6 +325,8 @@ export class DarkModeWizard {
         } else if (proceed === 'overwrite') {
           console.log(chalk.yellow('\n⚠️  Overwriting existing setup...\n'));
         }
+        
+        this.handledExistingSetup = true;
       } else {
         console.log(formatStatus('warning', 'No existing dark mode setup detected.'));
         console.log(chalk.gray(`  Framework: ${analysis.framework}`));

@@ -458,7 +458,9 @@ async function fileExists(filePath: string): Promise<boolean> {
 
 function getRelativeImportPath(fromFile: string, toFile: string): string {
   const relativePath = path.relative(path.dirname(fromFile), toFile);
-  return relativePath.startsWith('.') ? relativePath : `./${relativePath}`;
+  // Remove .tsx/.ts extension for clean imports
+  const cleanPath = relativePath.replace(/\.(tsx?|jsx?)$/, '');
+  return cleanPath.startsWith('.') ? cleanPath : `./${cleanPath}`;
 }
 
 function getJSXElementName(element: t.JSXElement): string {
