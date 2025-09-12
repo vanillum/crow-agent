@@ -22,6 +22,13 @@ export interface ProjectAnalysis {
   totalComponents: number;
   transformableComponents: number;
   estimatedChanges: number;
+  designSystem?: {
+    archetype: string;
+    confidence: number;
+    features: any;
+    recommendations: any;
+  };
+  colors?: any;
 }
 
 export interface ComponentFile {

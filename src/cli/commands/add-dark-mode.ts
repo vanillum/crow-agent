@@ -11,6 +11,7 @@ import { transformFiles, applyTransformations, createBackup, updateTailwindConfi
 import { generateThemeToggleComponent, suggestComponentPlacement } from '../../core/generator.js';
 import { commitChanges } from '../../utils/git.js';
 import { autoPlaceThemeToggle } from '../../core/auto-placement.js';
+import { AdaptiveTransformer } from '../../adaptive/adaptive-transformer.js';
 
 export interface AddDarkModeOptions {
   dryRun?: boolean;
@@ -25,6 +26,10 @@ export interface AddDarkModeOptions {
   theme?: string;
   autoPlace?: boolean;
   placement?: 'auto' | 'header' | 'layout' | 'corner';
+  adaptive?: boolean;
+  archetype?: 'corporate' | 'modern' | 'developer' | 'creative';
+  brandColor?: string;
+  validate?: boolean;
 }
 
 export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Promise<void> {
@@ -37,6 +42,9 @@ export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Prom
   
   const projectPath = defaultOptions.path || process.cwd();
   const spinner = ora();
+  
+  // Initialize adaptive transformer if needed
+  const adaptiveTransformer = defaultOptions.adaptive ? new AdaptiveTransformer() : null;
 
   try {
     console.log(chalk.blue.bold('🌙 Crow Agent - Adding Theme Switching Support\n'));
@@ -64,8 +72,28 @@ export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Prom
 
     // Step 2: Analyze project
     spinner.start('Analyzing project structure...');
-    const analysis = await analyzeProject(projectPath);
+    let analysis = await analyzeProject(projectPath);
     spinner.succeed(`Analyzed ${analysis.totalComponents} components`);
+    
+    // Step 2.5: Enhance with adaptive intelligence if requested
+    if (adaptiveTransformer) {
+      spinner.start('Applying adaptive intelligence...');
+      analysis = await adaptiveTransformer.enhanceAnalysis(analysis, {
+        adaptive: defaultOptions.adaptive,
+        archetype: defaultOptions.archetype,
+        brandColor: defaultOptions.brandColor,
+        validate: defaultOptions.validate
+      });
+      
+      if (analysis.designSystem) {
+        spinner.succeed(`Detected ${analysis.designSystem.archetype} archetype (${(analysis.designSystem.confidence * 100).toFixed(1)}% confidence)`);
+        
+        if (defaultOptions.verbose) {
+          console.log(chalk.gray(`Design strategy: ${analysis.designSystem.recommendations.darkModeStrategy}`));
+          console.log(chalk.gray(`Color treatment: ${analysis.designSystem.recommendations.colorTreatment}`));
+        }
+      }
+    }
 
     if (options.verbose) {
       console.log(chalk.gray(`Framework: ${analysis.framework}`));
@@ -142,7 +170,7 @@ export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Prom
 
     // Step 5: Transform files
     spinner.start('Transforming component files...');
-    const transformResults = await transformFiles(analysis.componentFiles, options.theme);
+    const transformResults = await transformFiles(analysis.componentFiles, defaultOptions.theme);
     
     if (transformResults.failedTransformations > 0) {
       spinner.warn(`Transformed ${transformResults.successfulTransformations} files (${transformResults.failedTransformations} failed)`);
@@ -161,6 +189,41 @@ export async function addDarkModeCommand(options: AddDarkModeOptions = {}): Prom
 
     // Apply transformations to files
     await applyTransformations(transformResults.results);
+    
+    // Step 5.5: Validate theme quality if adaptive mode and validation requested
+    if (adaptiveTransformer && defaultOptions.validate) {
+      spinner.start('Validating theme quality...');
+      
+      try {
+        // Create mapping from transformation results for validation
+        const generatedMappings: Record<string, string> = {};
+        transformResults.results.forEach(result => {
+          if (result.success) {
+            result.transformedClasses.forEach(cls => {
+              generatedMappings[cls] = 'transformed'; // Simplified for validation
+            });
+          }
+        });
+        
+        const validation = adaptiveTransformer.validateTheme(generatedMappings, analysis);
+        
+        if (validation.passed) {
+          spinner.succeed(`Theme quality validated (${(validation.score * 100).toFixed(1)}% score)`);
+        } else {
+          spinner.warn(`Theme quality issues detected (${(validation.score * 100).toFixed(1)}% score)`);
+          
+          if (validation.recommendations.length > 0) {
+            console.log(chalk.yellow('\n⚠️ Recommendations:'));
+            validation.recommendations.forEach(rec => {
+              console.log(chalk.yellow(`   • ${rec}`));
+            });
+            console.log('');
+          }
+        }
+      } catch (error) {
+        spinner.warn(`Theme validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }
 
     // Step 6: Update Tailwind config
     const configFile = analysis.tailwindConfigPath || analysis.tailwindCssFile;
@@ -306,5 +369,9 @@ export function createAddDarkModeCommand(): Command {
     .option('--no-commit', 'Skip automatic git commit')
     .option('--verbose', 'Enable verbose output')
     .option('--path <path>', 'Project path (default: current directory)')
+    .option('--adaptive', 'Use adaptive design system intelligence')
+    .option('--archetype <type>', 'Force specific design archetype (corporate|modern|developer|creative)')
+    .option('--brand-color <color>', 'Override detected brand color')
+    .option('--validate', 'Validate generated theme quality')
     .action(addDarkModeCommand);
 }

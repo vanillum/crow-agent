@@ -14,6 +14,10 @@ export interface ParsedCommand {
     noCommit?: boolean;
     verbose?: boolean;
     theme?: string;
+    adaptive?: boolean;
+    archetype?: string;
+    brandColor?: string;
+    validate?: boolean;
   };
   confidence: number;
 }
@@ -109,6 +113,14 @@ function extractOptions(input: string): ParsedCommand['options'] {
   if (/(?:--verbose|-v)/i.test(input)) {
     options.verbose = true;
   }
+  
+  if (/--adaptive/i.test(input)) {
+    options.adaptive = true;
+  }
+  
+  if (/--validate/i.test(input)) {
+    options.validate = true;
+  }
 
   // Extract framework specification
   const frameworkMatch = input.match(/(?:--framework|--for)\s+(react|vue|html|nextjs|nuxt)/i);
@@ -135,6 +147,18 @@ function extractOptions(input: string): ParsedCommand['options'] {
     // Map vercel to v0 for backward compatibility
     if (theme === 'vercel') theme = 'v0';
     options.theme = theme;
+  }
+
+  // Extract archetype specification
+  const archetypeMatch = input.match(/--archetype\s+(corporate|modern|developer|creative)/i);
+  if (archetypeMatch && archetypeMatch[1]) {
+    options.archetype = archetypeMatch[1].toLowerCase();
+  }
+
+  // Extract brand color specification
+  const brandColorMatch = input.match(/--brand-color\s+(#[0-9a-fA-F]{3,6}|[a-zA-Z]+)/i);
+  if (brandColorMatch && brandColorMatch[1]) {
+    options.brandColor = brandColorMatch[1];
   }
 
   return options;
